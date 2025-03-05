@@ -1,4 +1,5 @@
 ﻿using ApiTest1.Context;
+using ApiTest1.Contracts;
 using ApiTest1.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,77 +10,41 @@ namespace ApiTest1.Controllers
     [Route("[controller]")]
     public class CarController : ControllerBase
     {
-        public DatabaseContext databaseContext;
-        public CarController(DatabaseContext databaseContext) 
+        private readonly ICarService carService;
+
+        public CarController(ICarService carService) 
         { 
-            this.databaseContext = databaseContext;
+            this.carService = carService;
         }
 
         [HttpGet]
         public async Task<List<Car>> GetAllCars()
         {
-            List<Car> listOfCars = await databaseContext.Cars.ToListAsync();
-
-            return listOfCars;
+            return await carService.GetAllCars();
         }
 
         [HttpGet("{id}")]
         public async Task<Car> GetCarById([FromRoute] int id)
         {
-            Car? car = await databaseContext.Cars.Where(car => car.CarId == id).FirstOrDefaultAsync();
-
-            if (car != null)
-                return car;
-
-            return null;
+            return await carService.GetCarById(id);
         }
 
         [HttpPost]
         public async Task<Car> CreateCar([FromBody] Car car)
         {
-            await databaseContext.Cars.AddAsync(car);
-
-            await databaseContext.SaveChangesAsync();
-
-            return car;
+            return await carService.CreateCar(car);
         }
 
         [HttpPut("{id}")] 
         public async Task<Car?> UpdateCar([FromRoute] int id, [FromBody] Car car)
         {
-            // Check if record exists in database
-            var carFromDatabase = await databaseContext.Cars.Where(car => car.CarId == id).FirstOrDefaultAsync();
-
-            if(carFromDatabase == null)
-                return null;
-
-            // Actual Update
-            carFromDatabase.Brand = car.Brand;
-            carFromDatabase.Model = car.Model;
-            carFromDatabase.Year = car.Year;
-            carFromDatabase.Color = car.Color;
-
-            await databaseContext.SaveChangesAsync();
-
-            // Return result
-            return carFromDatabase;
+            return await carService.UpdateCar(car, id);
         }
 
         [HttpDelete("{id}")]
         public async Task<bool> DeleteCar([FromRoute] int id)
         {
-            // Check if record exists in database
-            var carFromDatabase = await databaseContext.Cars.Where(car => car.CarId == id).FirstOrDefaultAsync();
-
-            if (carFromDatabase == null) 
-                return false;
-
-            // Actual record Deletion
-            databaseContext.Remove(carFromDatabase);
-
-            await databaseContext.SaveChangesAsync();
-
-            return true;
+            return await carService.DeleteCar(id);
         }
     }
 }

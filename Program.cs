@@ -1,4 +1,7 @@
 using ApiTest1.Context;
+using ApiTest1.Contracts;
+using ApiTest1.Repostories;
+using ApiTest1.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +12,14 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Service binding
+builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<ICarBrandService, CarBrandService>();
+
+// Repositories binding
+builder.Services.AddScoped<ICarRepository, CarRepository>();
+
 
 // Database Configuration
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 29));
