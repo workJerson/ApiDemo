@@ -1,5 +1,6 @@
 ﻿using ApiTest1.Context;
 using ApiTest1.Contracts;
+using ApiTest1.Dtos;
 using ApiTest1.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,33 +19,46 @@ namespace ApiTest1.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Car>> GetAllCars()
+        public async Task<IActionResult> GetAllCars()
         {
-            return await carService.GetAllCars();
+            var listOfCars = await carService.GetAllCars();
+
+            return Ok(listOfCars);
         }
 
         [HttpGet("{id}")]
-        public async Task<Car> GetCarById([FromRoute] int id)
+        public async Task<IActionResult> GetCarById([FromRoute] int id)
         {
-            return await carService.GetCarById(id);
+            var car =  await carService.GetCarById(id);
+
+            return Ok(car);
         }
 
         [HttpPost]
-        public async Task<Car> CreateCar([FromBody] Car car)
+        public async Task<IActionResult> CreateCar([FromBody] CreateCarModel car)
         {
-            return await carService.CreateCar(car);
+            var createCarResult =  await carService.CreateCar(car);
+
+            return Ok(createCarResult);
         }
 
         [HttpPut("{id}")] 
-        public async Task<Car?> UpdateCar([FromRoute] int id, [FromBody] Car car)
+        public async Task<IActionResult> UpdateCar([FromRoute] int id, [FromBody] UpdateCarModel car)
         {
-            return await carService.UpdateCar(car, id);
+            var updateCarResult =  await carService.UpdateCar(car, id);
+
+            return Ok(updateCarResult);
         }
 
         [HttpDelete("{id}")]
-        public async Task<bool> DeleteCar([FromRoute] int id)
+        public async Task<IActionResult> DeleteCar([FromRoute] int id)
         {
-            return await carService.DeleteCar(id);
+            var deleteCarResult =  await carService.DeleteCar(id);
+
+            if (deleteCarResult)
+                return Ok(deleteCarResult);
+            else
+                return BadRequest(deleteCarResult);
         }
     }
 }

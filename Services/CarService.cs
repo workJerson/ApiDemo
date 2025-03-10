@@ -1,6 +1,11 @@
 ﻿using ApiTest1.Context;
+using ApiTest1.Dtos;
 using ApiTest1.Entities;
 using ApiTest1.Repostories;
+using ApiTest1.Validators;
+using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +13,10 @@ namespace ApiTest1.Contracts
 {
     public interface ICarService
     {
-        Task<List<Car>> GetAllCars();
-        Task<Car> GetCarById(int id);
-        Task<Car> CreateCar(Car car);
-        Task<Car?> UpdateCar(Car car, int id);
+        Task<List<GetCarModel>> GetAllCars();
+        Task<GetCarModel> GetCarById(int id);
+        Task<GetCarModel> CreateCar(CreateCarModel car);
+        Task<GetCarModel?> UpdateCar(UpdateCarModel car, int id);
         Task<bool> DeleteCar(int id);
     }
     public class CarService : ICarService
@@ -19,15 +24,29 @@ namespace ApiTest1.Contracts
         private readonly ICarRepository carRepository;
 
         public DatabaseContext databaseContext;
-        public CarService(DatabaseContext databaseContext, ICarRepository carRepository)
+
+        private readonly IMapper mapper;
+
+        public CarService(DatabaseContext databaseContext, ICarRepository carRepository, IMapper mapper)
         {
             this.databaseContext = databaseContext;
             this.carRepository = carRepository;
+            this.mapper = mapper;
         }
 
-        public async Task<Car> CreateCar(Car car)
+        public async Task<GetCarModel> CreateCar(CreateCarModel car)
         {
-            return await carRepository.CreateCar(car);
+            CreateCarValidator validator = new CreateCarValidator(databaseContext);
+            ValidationResult results = validator.Validate(car);
+
+            if (results.Errors.Count > 0)
+            {
+                throw new Exception(string.Join(",", results.Errors.Select(x => x.ErrorMessage).ToList()));
+            }
+
+            var createCarResult =  await carRepository.CreateCar(mapper.Map<Car>(car));
+            
+            return mapper.Map<GetCarModel>(createCarResult);
         }
 
         public async Task<bool> DeleteCar(int id)
@@ -46,24 +65,24 @@ namespace ApiTest1.Contracts
             return true;
         }
 
-        public async Task<List<Car>> GetAllCars()
+        public async Task<List<GetCarModel>> GetAllCars()
         {
             List<Car> listOfCars = await databaseContext.Cars.ToListAsync();
 
-            return listOfCars;
+            return mapper.Map<List<GetCarModel>>(listOfCars);
         }
 
-        public async Task<Car> GetCarById(int id)
+        public async Task<GetCarModel> GetCarById(int id)
         {
             Car? car = await databaseContext.Cars.Where(car => car.CarId == id).FirstOrDefaultAsync();
 
             if (car != null)
-                return car;
+                return mapper.Map<GetCarModel>(car);
 
             return null;
         }
 
-        public async Task<Car?> UpdateCar(Car car, int id)
+        public async Task<GetCarModel?> UpdateCar(UpdateCarModel car, int id)
         {
             // Check if record exists in database
             var carFromDatabase = await databaseContext.Cars.Where(car => car.CarId == id).FirstOrDefaultAsync();
@@ -79,7 +98,7 @@ namespace ApiTest1.Contracts
             await databaseContext.SaveChangesAsync();
 
             // Return result
-            return carFromDatabase;
+            return mapper.Map<GetCarModel>(carFromDatabase);
         }
     }
 }

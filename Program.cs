@@ -4,6 +4,8 @@ using ApiTest1.Repostories;
 using ApiTest1.Services;
 using Microsoft.EntityFrameworkCore;
 
+// Scaffold Script:
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -20,10 +22,12 @@ builder.Services.AddScoped<ICarBrandService, CarBrandService>();
 // Repositories binding
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 
+//Auto Mapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Database Configuration
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 29));
-string connectionString = "server=localhost; port=3306; database=api-test; user=root; password=2025root; SslMode=Required;Allow User Variables=true;";
+string connectionString = "server=localhost; port=3306; database=api-test; user=root; password=root@2024; SslMode=Required;Allow User Variables=true;";
 
 builder.Services.AddDbContext<DatabaseContext>(
             dbContextOptions => dbContextOptions.UseMySql(connectionString, serverVersion).EnableDetailedErrors()
