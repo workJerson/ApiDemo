@@ -19,9 +19,17 @@ namespace ApiTest1.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllCars()
+        public async Task<IActionResult> GetAllCars(
+            [FromQuery] string? quickSearch = null
+            , [FromQuery] string? model = null
+            , [FromQuery] int? year = null
+            , [FromQuery] string? color = null
+            , [FromQuery] string? brandName = null
+            , [FromQuery] bool isDescending = true
+            , [FromQuery] string? orderBy = null
+            )
         {
-            var listOfCars = await carService.GetAllCars();
+            var listOfCars = await carService.GetAllCars(quickSearch, model, year, color, brandName, isDescending, orderBy);
 
             return Ok(listOfCars);
         }

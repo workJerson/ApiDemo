@@ -15,5 +15,6 @@
 
     public class GetCarModel : UpdateCarModel
     {
+        public GetCarBrandDto? CarBrand { get; set; }
     }
 }
